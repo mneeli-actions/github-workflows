@@ -1,0 +1,28 @@
+name: nodejs-feature-branch-workflow
+
+on :
+  workflow_dispatch:
+    inputs:
+      project:
+        description: 'Project'
+        required: true
+        type: string
+      component:
+        description: 'Component'
+        required: true
+        type: string
+      environment:
+        description: 'Environment'
+        required: true
+        type: string
+
+
+jobs:
+  trigger-workflow:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: List files
+        run: ls -la
