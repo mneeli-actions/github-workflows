@@ -1,7 +1,8 @@
 name: nodejs-feature-branch-workflow
 
 on :
-  workflow_dispatch:
+  # This workflow is triggered when called by another workflow using the `workflow_call` event.
+  workflow_call:
     inputs:
       project:
         description: 'Project'
