@@ -12,15 +12,11 @@ on :
         description: 'Component'
         required: true
         type: string
-      environment:
-        description: 'Environment'
-        required: true
-        type: string
 
 
 jobs:
   trigger-workflow:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
