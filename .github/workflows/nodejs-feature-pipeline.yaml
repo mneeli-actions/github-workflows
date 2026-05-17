@@ -68,3 +68,19 @@ jobs:
 
       - name: list images
         run: docker images
+
+      - name: Trivy scan
+        id: trivy_scan
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: ${{ env.ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/${{ env.PROJECT }}/${{ env.COMPONENT }}:${{ env.APP_VERSION }}
+          scan-type: 'image'
+          vuln-type: os
+          format: 'table'
+          exit-code: 1
+          severity: 'CRITICAL,HIGH'
+
+      - name: push image
+        id: push_image
+        run: |
+          docker push  ${ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/${PROJECT}/${COMPONENT}:${APP_VERSION}
