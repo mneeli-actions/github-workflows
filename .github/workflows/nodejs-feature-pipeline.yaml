@@ -36,3 +36,12 @@ jobs:
       - name: Run unit tests
         id: unit_tests
         run: npm test
+
+      - name: Check dependabot alerts
+        id: library_scan
+        uses: Posture-Cybersecurity/dependabot-security-checker@v1.1.5
+        with:
+          github-token: ${{ secrets.DEPENDABOT_TOKEN }}
+          severities: 'critical,high'  # Only check critical and high
+          output-file: 'security-report.csv'
+          fail-on-alerts: 'true'  # Fail workflow if alerts found
