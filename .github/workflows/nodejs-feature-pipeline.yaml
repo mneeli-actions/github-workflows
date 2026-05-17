@@ -12,11 +12,11 @@ on :
         description: 'Component'
         required: true
         type: string
-    secrets:
-      DEPENDABOT_TOKEN:
-        description: 'Token for Dependabot security checks'
-        required: true
 
+env:
+  PROJECT: ${{ inputs.project }}
+  COMPONENT: ${{ inputs.component }}
+  ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
 
 jobs:
   trigger-workflow:
@@ -58,5 +58,13 @@ jobs:
           aws-region: us-east-1
 
       - name: Login AWS ECR
-        id: login-ecr
+        id: login_ecr
         uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build image
+        id: build_image
+        run: |
+          docker build -t  ${ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/${PROJECT}/${COMPONENT}:${APP_VERSION} .
+
+      - name: list images
+        run: docker images
