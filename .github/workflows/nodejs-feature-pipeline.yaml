@@ -12,6 +12,10 @@ on :
         description: 'Component'
         required: true
         type: string
+    secrets:
+      DEPENDABOT_TOKEN:
+        description: 'Token for Dependabot security checks'
+        required: true
 
 
 jobs:
