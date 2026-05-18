@@ -50,6 +50,14 @@ jobs:
           output-file: 'security-report.csv'
           fail-on-alerts: 'true'  # Fail workflow if alerts found
 
+      - name: Update status — library-scan
+        uses: mneeli-actions/github-workflows/.github/actions/update-commit-status@main
+        with:
+          token: ${{ secrets.GIT_TOKEN }}
+          context: library-scan
+          state: ${{ steps.library_scan.outcome }}
+          description: library scan ${{ steps.library_scan.outcome }}
+
       - name: Configure aws credentials
         uses: aws-actions/configure-aws-credentials@v6.1.0
         with:
