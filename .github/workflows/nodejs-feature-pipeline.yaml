@@ -66,7 +66,7 @@ jobs:
         run: |
           docker build -t  ${ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/${PROJECT}/${COMPONENT}:${APP_VERSION} .
 
-      - name: list images
+      - name: List images
         run: docker images
 
       - name: Trivy scan
@@ -80,11 +80,10 @@ jobs:
           exit-code: 1
           severity: 'CRITICAL,HIGH'
 
-      - name: push image
+      - name: Push image
         id: push_image
         run: |
           docker push  ${ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/${PROJECT}/${COMPONENT}:${APP_VERSION}
-          
 
       - name: Slack alert
         if: always()
