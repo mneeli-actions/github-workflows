@@ -27,11 +27,9 @@ jobs:
       - name: Read version and generate promoted tag
         run: |
           APP_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
-          SHORT_SHA=$(git rev-parse --short HEAD)
-          PROMOTED_VERSION="${APP_VERSION}-${SHORT_SHA}"
+          SNAPSHOT_VERSION="${APP_VERSION}-SNAPSHOT"
           echo "APP_VERSION=$APP_VERSION"           >> $GITHUB_ENV
-          echo "SHORT_SHA=$SHORT_SHA"               >> $GITHUB_ENV
-          echo "PROMOTED_VERSION=$PROMOTED_VERSION" >> $GITHUB_ENV
+          echo "SNAPSHOT_VERSION=$SNAPSHOT_VERSION" >> $GITHUB_ENV
 
       - name: Print version info
         run: |
@@ -55,8 +53,8 @@ jobs:
         id: promote
         run: |
           REGISTRY="${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com"
-          SOURCE="${REGISTRY}/${{ inputs.project }}/${{ inputs.component }}:${APP_VERSION}"
-          TARGET="${REGISTRY}/${{ inputs.project }}/${{ inputs.component }}:${PROMOTED_VERSION}"
+          SOURCE="${REGISTRY}/${{ inputs.project }}/${{ inputs.component }}:${SNAPSHOT_VERSION}"
+          TARGET="${REGISTRY}/${{ inputs.project }}/${{ inputs.component }}:${APP_VERSION}"
 
           echo "Pulling : $SOURCE"
           docker pull $SOURCE
