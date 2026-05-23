@@ -41,6 +41,14 @@ jobs:
         id: unit_tests
         run: npm test
 
+      - name: Update status — Unit tests
+        uses: mneeli-actions/github-workflows/.github/actions/update-commit-status@main
+        with:
+          token: ${{ secrets.GIT_TOKEN }}
+          context: unit-tests
+          state: ${{ steps.unit_tests.outcome }}
+          description: library scan ${{ steps.unit_tests.outcome }}
+
       - name: Check dependabot alerts
         id: library_scan
         uses: Posture-Cybersecurity/dependabot-security-checker@v1.1.5
@@ -87,6 +95,14 @@ jobs:
           format: 'table'
           exit-code: 1
           severity: 'CRITICAL,HIGH'
+
+      - name: Update status — Trivy scan
+        uses: mneeli-actions/github-workflows/.github/actions/update-commit-status@main
+        with:
+          token: ${{ secrets.GIT_TOKEN }}
+          context: trivy-scan
+          state: ${{ steps.trivy_scan.outcome }}
+          description: library scan ${{ steps.trivy_scan.outcome }}
 
       - name: Push image
         id: push_image
