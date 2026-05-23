@@ -39,7 +39,13 @@ jobs:
 
       - name: Run unit tests
         id: unit_tests
-        run: npm test
+        run: |
+          TEST=$(node -e "const p = require('./package.json'); console.log(p.scripts?.test || '')")
+          if [[ -z "$TEST" || "$TEST" == *"no test specified"* ]]; then
+            echo "⚠️ No tests found, skipping."
+            exit 0
+          fi
+          npm test
 
       - name: Update status — Unit tests
         uses: mneeli-actions/github-workflows/.github/actions/update-commit-status@main
