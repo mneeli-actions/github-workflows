@@ -36,8 +36,6 @@ jobs:
         run: |
           echo "Component      : ${{ inputs.component }}"
           echo "Base version   : $APP_VERSION"
-          echo "Short SHA      : $SHORT_SHA"
-          echo "Promoted tag   : $PROMOTED_VERSION"
 
       - name: Configure aws credentials
         uses: aws-actions/configure-aws-credentials@v6.1.0
