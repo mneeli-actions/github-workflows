@@ -1,4 +1,4 @@
-name: nodejs-feature-branch-workflow
+name: java-feature-branch-workflow
 
 on :
   # This workflow is triggered when called by another workflow using the `workflow_call` event.
@@ -28,18 +28,18 @@ jobs:
       - name: Read version
         id: package_version
         run: |
-          APP_VERSION=$(jq -r .version package.json)
+          APP_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
           echo "APP_VERSION=$APP_VERSION" >> $GITHUB_ENV
 
       - name: Check app version
         run: echo "$APP_VERSION"
 
       - name: Install dependencies
-        run: npm install
+        run: mvn dependency:resolve -q
 
       - name: Run unit tests
         id: unit_tests
-        run: npm test
+        run: mvn test -q
 
       - name: Update status — Unit tests
         uses: mneeli-actions/github-workflows/.github/actions/update-commit-status@main
