@@ -12,15 +12,10 @@ on :
         description: 'Component'
         required: true
         type: string
-      version:
-        description: 'version'
-        required: true
-        type: string
 
 env:
   PROJECT: ${{ inputs.project }}
   COMPONENT: ${{ inputs.component }}
-  APPLICATION_VERSION: ${{ inputs.version }}
   ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
 
 jobs:
@@ -33,11 +28,13 @@ jobs:
       - name: Read version
         id: package_version
         run: |
-          APP_VERSION=${APPLICATION_VERSION}
-          echo "APP_VERSION=$APP_VERSION" >> $GITHUB_ENV
+          APP_VERSION=$(cat version.txt)
+          echo "IMAGE_VERSION=${APP_VERSION}-SNAPSHOT" >> $GITHUB_ENV
 
       - name: Check app version
-        run: echo "$APP_VERSION"
+        run: |
+          echo "APP_VERSION - $APP_VERSION"
+          echo "IMAGE_VERSION - $IMAGE_VERSION"
 
       - name: Configure aws credentials
         uses: aws-actions/configure-aws-credentials@v6.1.0
@@ -53,7 +50,7 @@ jobs:
       - name: Build image
         id: build_image
         run: |
-          docker build -t  ${ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/${PROJECT}/${COMPONENT}:${APP_VERSION} .
+          docker build -t  ${ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/${PROJECT}/${COMPONENT}:${IMAGE_VERSION} .
 
       - name: List images
         run: docker images
@@ -62,7 +59,7 @@ jobs:
         id: trivy_scan
         uses: aquasecurity/trivy-action@v0.36.0
         with:
-          image-ref: ${{ env.ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/${{ env.PROJECT }}/${{ env.COMPONENT }}:${{ env.APP_VERSION }}
+          image-ref: ${{ env.ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/${{ env.PROJECT }}/${{ env.COMPONENT }}:${{ env.IMAGE_VERSION }}
           scan-type: 'image'
           vuln-type: os
           format: 'table'
@@ -90,7 +87,7 @@ jobs:
       - name: Push image
         id: push_image
         run: |
-          docker push  ${ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/${PROJECT}/${COMPONENT}:${APP_VERSION}
+          docker push  ${ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/${PROJECT}/${COMPONENT}:${IMAGE_VERSION}
 
       - name: Slack alert
         if: always()
