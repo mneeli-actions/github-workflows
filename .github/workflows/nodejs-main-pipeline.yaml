@@ -1,0 +1,89 @@
+name: nodejs-main-branch-workflow
+
+on :
+  # This workflow is triggered when called by another workflow using the `workflow_call` event.
+  workflow_call:
+    inputs:
+      project:
+        description: 'Project'
+        required: true
+        type: string
+      component:
+        description: 'Component'
+        required: true
+        type: string
+
+env:
+  PROJECT: ${{ inputs.project }}
+  COMPONENT: ${{ inputs.component }}
+
+jobs:
+  trigger-workflow:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Read version and generate promoted tag
+        run: |
+          APP_VERSION=$(jq -r .version package.json)
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          PROMOTED_VERSION="${APP_VERSION}-${SHORT_SHA}"
+          echo "APP_VERSION=$APP_VERSION"           >> $GITHUB_ENV
+          echo "SHORT_SHA=$SHORT_SHA"               >> $GITHUB_ENV
+          echo "PROMOTED_VERSION=$PROMOTED_VERSION" >> $GITHUB_ENV
+
+      - name: Print version info
+        run: |
+          echo "Component      : ${{ inputs.component }}"
+          echo "Base version   : $APP_VERSION"
+          echo "Short SHA      : $SHORT_SHA"
+          echo "Promoted tag   : $PROMOTED_VERSION"
+
+      - name: Configure aws credentials
+        uses: aws-actions/configure-aws-credentials@v6.1.0
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Login AWS ECR
+        id: login_ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Retag Image
+        id: promote
+        run: |
+          REGISTRY="${{ secrets.AWS_ACCOUNT_ID }}}.dkr.ecr.us-east-1.amazonaws.com"
+          SOURCE="${REGISTRY}/${{ inputs.project }}/${{ inputs.component }}:${APP_VERSION}"
+          TARGET="${REGISTRY}/${{ inputs.project }}/${{ inputs.component }}:${PROMOTED_VERSION}"
+
+          echo "Pulling : $SOURCE"
+          docker pull $SOURCE
+
+          echo "Retagging as : $TARGET"
+          docker tag $SOURCE $TARGET
+          
+          echo "TARGET=$TARGET" >> $GITHUB_ENV
+
+      - name: List images
+        run: docker images
+
+      - name: Push image
+        id: push_image
+        run: |
+          docker push ${TARGET}
+
+      - name: Slack alert
+        if: always()
+        uses: slackapi/slack-github-action@v3.0.3
+        with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
+          payload: |
+            text: "${{ job.status == 'success' && ':white_check_mark:' || ':x:' }} *${{ inputs.project }}/${{ inputs.component }}* feature pipeline *${{ job.status }}*"
+            blocks:
+              - type: "section"
+                text:
+                  type: "mrkdwn"
+                  text: "${{ job.status == 'success' && ':white_check_mark:' || ':x:' }} *${{ inputs.project }}/${{ inputs.component }}* feature pipeline: *${{ job.status }}*\n*Branch:* `${{ github.ref_name }}`\n*Commit:* `${{ github.sha }}`\n*<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Run>*"
