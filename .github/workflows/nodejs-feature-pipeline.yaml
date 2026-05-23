@@ -104,6 +104,15 @@ jobs:
           state: ${{ steps.trivy_scan.outcome }}
           description: library scan ${{ steps.trivy_scan.outcome }}
 
+      - name: Create ECR Repository (if not exists)
+        run: |
+          aws ecr describe-repositories \
+            --repository-names "${{ env.PROJECT }}/${{ env.COMPONENT }}" \
+            --region ${{ env.AWS_REGION }} 2>/dev/null || \
+          aws ecr create-repository \
+            --repository-name "${{ env.PROJECT }}/${{ env.COMPONENT }}" \
+            --region ${{ env.AWS_REGION }}
+
       - name: Push image
         id: push_image
         run: |
