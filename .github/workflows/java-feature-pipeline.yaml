@@ -29,6 +29,7 @@ jobs:
         id: package_version
         run: |
           APP_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          echo "APP_VERSION=${APP_VERSION}" >> $GITHUB_ENV
           echo "IMAGE_VERSION=${APP_VERSION}-SNAPSHOT" >> $GITHUB_ENV
 
       - name: Check app version
