@@ -54,7 +54,7 @@ jobs:
       - name: Retag Image
         id: promote
         run: |
-          REGISTRY="${{ secrets.AWS_ACCOUNT_ID }}}.dkr.ecr.us-east-1.amazonaws.com"
+          REGISTRY="${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com"
           SOURCE="${REGISTRY}/${{ inputs.project }}/${{ inputs.component }}:${APP_VERSION}"
           TARGET="${REGISTRY}/${{ inputs.project }}/${{ inputs.component }}:${PROMOTED_VERSION}"
 
