@@ -12,12 +12,16 @@ on :
         description: 'Component'
         required: true
         type: string
+      version:
+        description: 'version'
+        required: true
+        type: string
 
 env:
   PROJECT: ${{ inputs.project }}
   COMPONENT: ${{ inputs.component }}
-  ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
   APPLICATION_VERSION: ${{ inputs.version }}
+  ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
 
 jobs:
   trigger-workflow:
